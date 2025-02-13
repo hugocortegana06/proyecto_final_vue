@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logs de Actividad</title>
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  <!-- Vue 3 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.2.0/dist/vue.global.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      margin: 20px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      margin: 0;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      background-color: #007bff;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #007bff;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Logs de Actividad</h1>
+    <button id="backBtn">Volver</button>
+  </header>
+  
+  <div id="app">
+    <!-- Logs de Sesión -->
+    <div class="section">
+      <h2>Logs de Sesión (Inicio/Cierre)</h2>
+      <table id="sessionLogsTable" class="display">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Acción</th>
+            <th>Usuario</th>
+            <th>Fecha</th>
+            <th>Detalles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="log in sessionLogs" :key="log.id">
+            <td>{{ log.id }}</td>
+            <td>{{ log.accion }}</td>
+            <td>{{ log.usuario }}</td>
+            <td>{{ log.timestamp }}</td>
+            <td>{{ log.detalles }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Logs de Acciones (Añadir, Modificar, Eliminar) -->
+    <div class="section">
+      <h2>Logs de Acciones (Añadir, Modificar, Eliminar)</h2>
+      <table id="actionLogsTable" class="display">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Acción</th>
+            <th>Usuario</th>
+            <th>Fecha</th>
+            <th>Detalles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="log in actionLogs" :key="log.id">
+            <td>{{ log.id }}</td>
+            <td>{{ log.accion }}</td>
+            <td>{{ log.usuario }}</td>
+            <td>{{ log.timestamp }}</td>
+            <td>{{ log.detalles }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Script principal -->
+  <script type="module" src="scripts/logs.js"></script>
+  <script>
+    document.getElementById("backBtn").addEventListener("click", function() {
+      // Ajusta esta URL según tu estructura
+      window.location.href = "admin.html";
+    });
+  </script>
+</body>
+</html>

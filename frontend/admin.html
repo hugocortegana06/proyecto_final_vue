@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador</title>
+    <link rel="stylesheet" href="styles/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.0/dist/vue.global.min.js"></script>
+</head>
+<body>
+    <!-- Barra superior con botones de navegación -->
+    <div class="admin-header">
+        <button id="logoutBtn" class="logout-button">Cerrar Sesión</button>
+        <button id="verUsuariosBtn" class="view-users-button">Usuarios Registrados</button>
+        <button id="verLogsBtn" class="view-logs-button">Ver Logs</button>
+    </div>
+
+    <h1>Panel de Administrador</h1>
+
+    <div id="app">
+        <!-- Sección: Lista de Vehículos Retirados -->
+        <div class="section">
+            <h2>Lista de Vehículos Retirados</h2>
+            <div class="filter-container">
+                <input v-model="filterMatricula" placeholder="Filtrar por matrícula">
+                <input v-model="filterFecha" type="date">
+                <select v-model="filterEstado">
+                    <option value="">Todos los estados</option>
+                    <option value="En depósito">En depósito</option>
+                    <option value="Liberado">Liberado</option>
+                    <option value="Retirado">Retirado</option>
+                </select>
+            </div>
+
+            <ul class="vehicle-list">
+                <li v-for="vehiculo in filteredVehiculos" :key="vehiculo.id">
+                    <strong>Matrícula:</strong> {{ vehiculo.matricula }} |
+                    <strong>Fecha Entrada:</strong> {{ vehiculo.fechaentrada }} |
+                    <strong>Estado:</strong> {{ vehiculo.estado }}
+                    <button @click="editVehiculo(vehiculo)">Actualizar</button>
+                    <button class="delete-btn" @click="deleteVehiculo(vehiculo.id)">Eliminar</button>
+                </li>
+            </ul>
+            <p v-if="filteredVehiculos.length === 0">No hay vehículos retirados.</p>
+        </div>
+
+        <!-- Sección: Registrar Nuevo Vehículo -->
+        <div class="section">
+            <h2>Registrar Nuevo Vehículo Retirado</h2>
+            <input v-model="newMatricula" placeholder="Matrícula">
+            <input v-model="newFechaEntrada" type="datetime-local">
+            <select v-model="newEstado">
+                <option value="En depósito">En depósito</option>
+                <option value="Liberado">Liberado</option>
+                <option value="Retirado">Retirado</option>
+            </select>
+            <button @click="registerVehiculo">Registrar Vehículo</button>
+        </div>
+
+        <!-- Sección: Formulario de Actualización -->
+        <div class="section" v-if="showUpdateForm">
+            <h2>Actualizar Vehículo</h2>
+            <input v-model="updateVehiculo.matricula" placeholder="Matrícula">
+            <input v-model="updateVehiculo.fechaentrada" type="datetime-local">
+            <input v-model="updateVehiculo.fechasalida" type="datetime-local">
+            <select v-model="updateVehiculo.estado">
+                <option value="En depósito">En depósito</option>
+                <option value="Liberado">Liberado</option>
+                <option value="Retirado">Retirado</option>
+            </select>
+            <button @click="updateVehiculoInfo">Actualizar Vehículo</button>
+        </div>
+
+        <!-- Sección: Registrar Nuevo Usuario -->
+        <div class="section">
+            <h2>Registrar Nuevo Usuario</h2>
+            <input v-model="newUsername" placeholder="Nombre de usuario">
+            <input v-model="newPassword" placeholder="Contraseña" type="password">
+            <select v-model="newRole">
+                <option value="admin">Administrador</option>
+                <option value="operario">Operario</option>
+            </select>
+            <button @click="registerUser">Registrar Usuario</button>
+        </div>
+
+        
+
+    <script type="module" src="scripts/admin.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("logoutBtn").addEventListener("click", function() {
+                localStorage.removeItem("user");
+                window.location.href = "index.html";
+            });
+
+            document.getElementById("verUsuariosBtn").addEventListener("click", function() {
+                window.location.href = "usuarios.html";
+            });
+
+            document.getElementById("verLogsBtn").addEventListener("click", function() {
+                window.location.href = "logs.html";
+            });
+        });
+    </script>
+</body>
+</html>

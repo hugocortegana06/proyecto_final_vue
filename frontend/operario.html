@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Operario</title>
+
+  <!-- Vue 3 -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.2.0/dist/vue.global.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+
+  <!-- Tu script principal, con type="module" -->
+  <script type="module" src="scripts/operario.js"></script>
+
+  <style>
+    /* ======= ESTILOS GENERALES ======= */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #007bff;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .menu {
+      display: flex;
+      gap: 15px;
+    }
+    .menu button {
+      background-color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      color: #007bff;
+      border-radius: 5px;
+    }
+    .menu button.active {
+      background-color: #0056b3;
+      color: white;
+    }
+    .container {
+      padding: 20px;
+    }
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    .action-btn {
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+      border-radius: 3px;
+      margin: 2px;
+    }
+    .delete-btn {
+      background-color: #dc3545;
+      color: white;
+    }
+    .edit-btn {
+      background-color: #ffc107;
+      color: black;
+    }
+
+    /* ======= MODALES ======= */
+    .modal-fondo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      padding: 10px;
+    }
+    .modal-contenido {
+      position: relative;
+      background-color: #fff;
+      border-radius: 5px;
+      padding: 20px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80%;
+      overflow-y: auto;
+    }
+    .modal-contenido h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    .modal-contenido form {
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-contenido label {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .modal-contenido input[type="text"],
+    .modal-contenido input[type="datetime-local"],
+    .modal-contenido input[type="number"],
+    .modal-contenido select {
+      width: 100%;
+      padding: 6px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .modal-contenido button {
+      margin-top: 15px;
+      margin-right: 10px;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .modal-contenido button[type="submit"] {
+      background-color: #28a745;
+      color: white;
+    }
+    .modal-contenido button[type="button"] {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    /* Botón "X" para cerrar */
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1.4rem;
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+    }
+    .close-modal:hover {
+      color: #000;
+    }
+
+    /* Botón para Agregar Vehículo */
+    .add-vehicle-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+    .add-vehicle-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- ENCABEZADO -->
+    <header>
+      <h1>Panel de Operario</h1>
+      <div class="menu">
+        <!-- Botón de Logout -->
+        <button id="logoutBtn">Cerrar Sesión</button>
+        <!-- Botones de Vistas -->
+        <button :class="{ active: vista === 'vehiculos' }" @click="vista = 'vehiculos'">Vehículos</button>
+        <button :class="{ active: vista === 'retiradas' }" @click="vista = 'retiradas'">Retiradas</button>
+      </div>
+    </header>
+      
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="container">
+      <!-- LISTA DE VEHÍCULOS -->
+      <div v-if="vista === 'vehiculos'">
+        <h2>Lista de Vehículos</h2>
+        <!-- Botón para Agregar Vehículo -->
+        <button class="add-vehicle-btn" @click="mostrarFormularioNuevoVehiculo = true">Agregar Vehículo</button>
+        <br><br>
+        <div class="table-container">
+          <table id="vehiculosTable" class="display">
+            <thead>
+              <tr>
+                <th>Identificador</th>
+                <th>Fecha Entrada</th>
+                <th>Matrícula</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Lugar</th>
+                <th>Dirección</th>
+                <th>Tipo Vehículo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- LISTA DE RETIRADAS -->
+      <div v-if="vista === 'retiradas'">
+        <h2>Lista de Retiradas</h2>
+        <!-- Botón para Agregar Retirada -->
+        <button @click="mostrarFormularioNuevaRetirada = true">Agregar Retirada</button>
+        <br><br> 
+        <div class="table-container">
+          <table id="retiradasTable" class="display">
+            <thead>
+              <tr>
+                <th>ID Vehículo</th>
+                <th>Nombre</th>
+                <th>NIF</th>
+                <th>Domicilio</th>
+                <th>Población</th>
+                <th>Provincia</th>
+                <th>Permiso</th>
+                <th>Fecha</th>
+                <th>Agente</th>
+                <th>Importe Retirada</th>
+                <th>Importe Depósito</th>
+                <th>Total</th>
+                <th>Opciones Pago</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- Fin container -->
+
+    <!-- Modal para Agregar Nuevo Vehículo -->
+    <div v-if="mostrarFormularioNuevoVehiculo" class="modal-fondo">
+      <div class="modal-contenido">
+        <!-- Botón X para cerrar -->
+        <button class="close-modal" @click="cerrarFormularioNuevoVehiculo">x</button>
+        <h3>Agregar Nuevo Vehículo</h3>
+        <form @submit.prevent="guardarNuevoVehiculo">
+          <label>Fecha Entrada:
+            <input type="datetime-local" v-model="nuevoVehiculo.fechaentrada" required>
+          </label>
+          <label>Fecha Salida:
+            <input type="datetime-local" v-model="nuevoVehiculo.fechasalida" required>
+          </label>
+          <label>Lugar:
+            <input type="text" v-model="nuevoVehiculo.lugar" required>
+          </label>
+          <label>Dirección:
+            <input type="text" v-model="nuevoVehiculo.direccion" required>
+          </label>
+          <label>Agente:
+            <input type="text" v-model="nuevoVehiculo.agente" required>
+          </label>
+          <label>Matrícula:
+            <input type="text" v-model="nuevoVehiculo.matricula" required>
+          </label>
+          <label>Marca:
+            <input type="text" v-model="nuevoVehiculo.marca" required>
+          </label>
+          <label>Modelo:
+            <input type="text" v-model="nuevoVehiculo.modelo" required>
+          </label>
+          <label>Color:
+            <input type="text" v-model="nuevoVehiculo.color">
+          </label>
+          <label>Motivo:
+            <input type="text" v-model="nuevoVehiculo.motivo">
+          </label>
+          <label>Tipo de Vehículo:
+            <input type="text" v-model="nuevoVehiculo.tipovehiculo" required>
+          </label>
+          <label>Grua:
+            <input type="text" v-model="nuevoVehiculo.grua" required>
+          </label>
+          <!-- Campo Estado no editable -->
+          <label>Estado:
+            <input type="text" v-model="nuevoVehiculo.estado" readonly>
+          </label>
+          <button type="submit">Guardar Vehículo</button>
+          <button type="button" @click="cerrarFormularioNuevoVehiculo">Cancelar</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal para Editar Vehículo (incluye formulario de Retirada si el estado es Liquidado) -->
+    <div v-if="mostrarFormularioEdicion" class="modal-fondo">
+      <div class="modal-contenido">
+        <!-- Botón X para cerrar -->
+        <button class="close-modal" @click="cerrarFormularioEdicion">x</button>
+        <h3>Editar Vehículo (ID: {{ vehiculoSeleccionado.id }})</h3>
+        <form @submit.prevent="guardarVehiculo">
+          <label>Fecha Entrada:
+            <input type="datetime-local" v-model="vehiculoSeleccionado.fechaentrada">
+          </label>
+          <label>Fecha Salida:
+            <input type="datetime-local" v-model="vehiculoSeleccionado.fechasalida">
+          </label>
+          <label>Lugar:
+            <input type="text" v-model="vehiculoSeleccionado.lugar">
+          </label>
+          <label>Dirección:
+            <input type="text" v-model="vehiculoSeleccionado.direccion">
+          </label>
+          <label>Agente:
+            <input type="text" v-model="vehiculoSeleccionado.agente">
+          </label>
+          <label>Matrícula:
+            <input type="text" v-model="vehiculoSeleccionado.matricula">
+          </label>
+          <label>Marca:
+            <input type="text" v-model="vehiculoSeleccionado.marca">
+          </label>
+          <label>Modelo:
+            <input type="text" v-model="vehiculoSeleccionado.modelo">
+          </label>
+          <label>Color:
+            <input type="text" v-model="vehiculoSeleccionado.color">
+          </label>
+          <label>Motivo:
+            <input type="text" v-model="vehiculoSeleccionado.motivo">
+          </label>
+          <label>Tipo de Vehículo:
+            <input type="text" v-model="vehiculoSeleccionado.tipovehiculo">
+          </label>
+          <label>Grua:
+            <input type="text" v-model="vehiculoSeleccionado.grua">
+          </label>
+          <!-- Selector para cambiar el estado -->
+          <label>Estado:
+            <select v-model="vehiculoSeleccionado.estado" @change="onEstadoChange">
+              <option value="En depósito">En depósito</option>
+              <option value="Liquidado">Liquidado</option>
+            </select>
+          </label>
+          <!-- Si el estado es Liquidado, se muestra el formulario para la Retirada -->
+          <div v-if="vehiculoSeleccionado.estado === 'Liquidado'">
+            <h4>Información para la Retirada</h4>
+            <label>Nombre del Cliente:
+              <input type="text" v-model="retiradaSeleccionada.nombre" required>
+            </label>
+            <label>NIF del Cliente:
+              <input type="text" v-model="retiradaSeleccionada.nif" required>
+            </label>
+            <label>Domicilio:
+              <input type="text" v-model="retiradaSeleccionada.domicilio" required>
+            </label>
+            <label>Población:
+              <input type="text" v-model="retiradaSeleccionada.poblacion" required>
+            </label>
+            <label>Provincia:
+              <select v-model="retiradaSeleccionada.provincia" required>
+                <option value="Almería">Almería</option>
+                <option value="Cádiz">Cádiz</option>
+                <option value="Córdoba">Córdoba</option>
+                <option value="Granada">Granada</option>
+                <option value="Huelva">Huelva</option>
+                <option value="Jaén">Jaén</option>
+                <option value="Málaga">Málaga</option>
+                <option value="Sevilla">Sevilla</option>
+              </select>
+            </label>
+            <label>Permiso:
+              <select v-model="retiradaSeleccionada.permiso" required>
+                <option value="A">A</option>
+                <option value="B">B</option>
+              </select>
+            </label>
+            <label>Fecha de Retirada:
+              <input type="datetime-local" v-model="retiradaSeleccionada.fecha" required>
+            </label>
+            <label>Agente encargado:
+              <input type="text" v-model="retiradaSeleccionada.agente" required>
+            </label>
+            <label>Importe Retirada:
+              <input type="number" v-model="retiradaSeleccionada.importeretirada" step="0.01" required>
+            </label>
+            <label>Importe Depósito:
+              <input type="number" v-model="retiradaSeleccionada.importedeposito" step="0.01" required>
+            </label>
+            <label>Total:
+              <input type="number" v-model="retiradaSeleccionada.total" step="0.01" required>
+            </label>
+            <label>Opciones de Pago:
+              <select v-model="retiradaSeleccionada.opcionespago" required>
+                <option value="tarjeta">Tarjeta</option>
+                <option value="efectivo">Efectivo</option>
+              </select>
+            </label>
+          </div>
+          <button type="submit">Guardar Cambios</button>
+          <button type="button" @click="cerrarFormularioEdicion">Cancelar</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal para Agregar Nueva Retirada (vista de retiradas) -->
+    <div v-if="mostrarFormularioNuevaRetirada" class="modal-fondo">
+      <div class="modal-contenido">
+        <!-- Botón X para cerrar -->
+        <button class="close-modal" @click="cerrarFormularioNuevaRetirada">x</button>
+        <h3>Agregar Nueva Retirada</h3>
+        <form @submit.prevent="guardarNuevaRetirada">
+          <label>ID:
+            <input type="text" v-model="nuevaRetirada.idvehiculos" required>
+          </label>
+          <label>Nombre:
+            <input type="text" v-model="nuevaRetirada.nombre" required>
+          </label>
+          <label>NIF:
+            <input type="text" v-model="nuevaRetirada.nif" required>
+          </label>
+          <label>Domicilio:
+            <input type="text" v-model="nuevaRetirada.domicilio" required>
+          </label>
+          <label>Población:
+            <input type="text" v-model="nuevaRetirada.poblacion" required>
+          </label>
+          <label>Provincia:
+            <select v-model="nuevaRetirada.provincia" required>
+              <option value="Almería">Almería</option>
+              <option value="Cádiz">Cádiz</option>
+              <option value="Córdoba">Córdoba</option>
+              <option value="Granada">Granada</option>
+              <option value="Huelva">Huelva</option>
+              <option value="Jaén">Jaén</option>
+              <option value="Málaga">Málaga</option>
+              <option value="Sevilla">Sevilla</option>
+            </select>
+          </label>
+          <label>Permiso:
+            <select v-model="nuevaRetirada.permiso" required>
+              <option value="A">A</option>
+              <option value="B">B</option>
+            </select>
+          </label>
+          <label>Fecha:
+            <input type="datetime-local" v-model="nuevaRetirada.fecha" required>
+          </label>
+          <label>Agente:
+            <input type="text" v-model="nuevaRetirada.agente" required>
+          </label>
+          <label>Importe Retirada:
+            <input type="number" step="0.01" v-model="nuevaRetirada.importeretirada" required>
+          </label>
+          <label>Importe Depósito:
+            <input type="number" step="0.01" v-model="nuevaRetirada.importedeposito" required>
+          </label>
+          <label>Total:
+            <input type="number" step="0.01" v-model="nuevaRetirada.total" required>
+          </label>
+          <label>Opciones de Pago:
+            <select v-model="nuevaRetirada.opcionespago" required>
+              <option value="tarjeta">Tarjeta</option>
+              <option value="efectivo">Efectivo</option>
+            </select>
+          </label>
+          <button type="submit">Guardar Retirada</button>
+          <button type="button" @click="cerrarFormularioNuevaRetirada">Cancelar</button>
+        </form>
+      </div>
+    </div>
+
+  </div><!-- Fin #app -->
+</body>
+</html>

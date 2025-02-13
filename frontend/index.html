@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="styles/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.0/dist/vue.global.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div v-if="showLogin">
+            <h1>Iniciar Sesión</h1>
+            <input type="text" v-model="username" placeholder="Nombre de usuario">
+            <input type="password" v-model="password" placeholder="Contraseña">
+            <button @click="login">Iniciar Sesión</button>
+
+            <p v-if="message">{{ message }}</p>
+            
+    </div>
+
+    <script type="module" src="scripts/login.js"></script>
+</body>
+</html>
